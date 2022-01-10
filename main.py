@@ -11,14 +11,7 @@ client = commands.Bot(command_prefix=prefix)
 @client.event
 async def on_ready():
   print(f"{client.user} has launched!")
-  # message = 'Dit is geen carlos dit is een duits botje!'
-  # for guild in client.guilds:
-  #   for channel in guild.channels:
-  #     if channel.type == discord.ChannelType.text:
-  #       if "general" in channel.name:
-  #         await channel.send(message)
-  #         print(f'Sent "{message}" to {channel.name} in {guild.name}')
-
+  
 cogs = {
   'cogs.duits',
   'cogs.mod',
