@@ -23,7 +23,8 @@ client = commands.Bot(command_prefix=prefix)
 
 @client.event
 async def on_ready():
-  print(f"{client.user} has launched!")
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="?"))
+    print(f"{client.user} has launched!")
 
 @client.event
 async def on_message(ctx):
@@ -58,7 +59,6 @@ async def on_message(ctx):
 
 cogs = {
     'cogs.duits',
-    'cogs.mod',
     'cogs.eco',
     'cogs.dev',
     'cogs.xp',
