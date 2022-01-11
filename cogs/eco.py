@@ -18,17 +18,20 @@ class eco(commands.Cog):
     # ============()============
 
     @commands.command(brief="Check how much money you have", aliases=["money", "bal"])
-    async def balance(self, ctx):
+    async def balance(self, ctx, member: discord.Member = None):
         await ctx.message.delete()
 
-        await bal.create_account(ctx.author, ctx.guild.id)
+        if member == None:
+            member = ctx.author
+
+        await bal.create_account(member, ctx.guild.id)
         users = await bal.get_all_users()
 
-        if str(ctx.author.id) in users[str(ctx.guild.id)]:
-            balance = users[str(ctx.guild.id)][str(ctx.author.id)]["balance"]
+        if str(member.id) in users[str(ctx.guild.id)]:
+            balance = users[str(ctx.guild.id)][str(member.id)]["balance"]
 
-        embed = discord.Embed(title = f"{ctx.author.name}'s balance", color = 0xfff)
-        embed.add_field(name = f"``Balance:``", value = balance, inline = False)
+        embed = discord.Embed(title = f"{member.name}'s balance", color = 0xfff)
+        embed.add_field(name = f"``Balance:``", value = f'¥{balance} Yen', inline = False)
         await ctx.send(embed = embed)
 
     # ============()============
@@ -120,6 +123,8 @@ class eco(commands.Cog):
         else:
             bet = int(bet)
 
+        await bal.update_balance(ctx.author, -bet, ctx.guild.id)
+
         # user does not have enough money
         if balance < bet: 
             embed = discord.Embed(title=f"You cannot afford this bet!", color=0xfff)
@@ -143,18 +148,23 @@ class eco(commands.Cog):
             embed = discord.Embed(title=f":money_with_wings: {ctx.author.name}'s slot machine prize (¥{bet})", color=0xfff)
             embed.add_field(name=f"``Jackpot``", value=f"¥{bet * 5} Yen has been added to your account!", inline = False)
             await ctx.send(embed=embed)
+            prize = bet * 5
 
         # Won
         elif slots[0] is slots[1] or slots[0] is slots[2] or slots[0] is slots[2]:
             embed = discord.Embed(title=f":money_with_wings: {ctx.author.name}'s slot machine prize (¥{bet})", color=0xfff)
             embed.add_field(name=f"``Won``", value=f"¥{bet * 2} Yen has been added to your account!", inline = False)
             await ctx.send(embed=embed)
+            prize = bet * 2
 
         # Lost
         else:
             embed = discord.Embed(title=f":money_with_wings: {ctx.author.name}'s slot machine prize (¥{bet})", color=0xfff)
             embed.add_field(name=f"``Lost``", value=f"You've lost the gamble", inline = False)
             await ctx.send(embed=embed)
+            prize = 0
+
+        await bal.update_balance(ctx.author, prize, ctx.guild.id)
 
     @gamble.error
     async def on_command_error(self, ctx, error):
