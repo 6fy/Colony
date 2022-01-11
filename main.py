@@ -11,7 +11,6 @@ data = Data()
 #         Bot variables
 # ---------------------------------------- >
 
-
 with open('assets/bot/configuration/' + 'config.0', 'r') as f:
     lines = f.readlines()
     token = lines[0]
