@@ -4,7 +4,7 @@ import random
 from discord.ext import commands
 from discord.ext.commands import CommandNotFound
 
-from level import Data
+from assets.imports.level import Data
 data = Data()
 
 # < ----------------------------------------
@@ -12,7 +12,7 @@ data = Data()
 # ---------------------------------------- >
 
 
-with open('assets/configuration/' + 'config.0', 'r') as f:
+with open('assets/bot/configuration/' + 'config.0', 'r') as f:
     lines = f.readlines()
     token = lines[0]
     prefix = lines[1]
@@ -70,7 +70,6 @@ async def on_message(ctx):
 # ---------------------------------------- >
 
 cogs = {
-    'cogs.duits',
     'cogs.eco',
     'cogs.dev',
     'cogs.xp',

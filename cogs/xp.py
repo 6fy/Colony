@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from level import Data
+from assets.imports.level import Data
 
 data = Data()
 

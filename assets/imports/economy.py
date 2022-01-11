@@ -2,7 +2,7 @@ import json
 
 class Balance():
     def __init__(self):
-        self.file = 'assets/data/eco.json'
+        self.file = 'assets/userdata/economy/eco.json'
 
     # ============()============
     #   All users

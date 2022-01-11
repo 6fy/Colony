@@ -2,8 +2,8 @@ from asyncio.windows_events import NULL
 import json
 import discord
 
-file = "assets/levels/" + "data.json"
-guild_file = "assets/levels/" + "ranks.json"
+file = "assets/userdata/levels/" + "data.json"
+guild_file = "assets/userdata/levels/" + "ranks.json"
 
 class Data:
     def __init__(self):

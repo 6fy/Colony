@@ -3,10 +3,10 @@ import random
 
 from discord.ext import commands
 
-from economy import Balance
+from assets.imports.economy import Balance
 bal = Balance()
 
-from convert import Converter
+from assets.imports.convert import Converter
 convert = Converter()
 
 class eco(commands.Cog):
@@ -35,7 +35,7 @@ class eco(commands.Cog):
     #   Get money daily
     # ============()============
     @commands.command(brief="Get money daily", aliases=["work"])
-    @commands.cooldown(1, 86400, commands.BucketType.user)
+    @commands.cooldown(1, 86400, commands.BucketType.user) # Commands available every 24 hours
     async def daily(self, ctx):
         await ctx.message.delete()
     
@@ -71,17 +71,21 @@ class eco(commands.Cog):
     async def leaderboard(self, ctx, x = 11):
         users = await bal.get_guild_users(ctx.guild.id)
 
-        total = []
-        members = []
+        total = [] # Total amount to sort it
+        members = [] # Members to print out the members later
+        # Looping through all the users and adding them to the lists
         for id in users:
             total_amount = users[str(id)]["balance"]
             total.append(total_amount)
             members.append(id)
 
+        # Sorting the total (amount) list 
         sort = sorted(total, reverse=True)
 
+        # Get 5 highest values
         max = 5
         for v in range(len(sort)):
+            # If the value is lower than the 5th place remove them
             if v > max:
                 total.pop(v)
                 members.pop(v)
@@ -93,6 +97,71 @@ class eco(commands.Cog):
             embed.add_field(name = f"{i+1}. {member}" , value = f"**¥{total[i]}** Yen",  inline = False)
 
         await ctx.send(embed = embed)
+
+    # ============()============
+    #    Gamble your money 
+    # ============()============
+
+    @commands.command(brief="Gamble your money")
+    async def gamble(self, ctx, bet: str = None):
+        await ctx.message.delete()
+
+        users = await bal.get_guild_users(ctx.guild.id)
+        balance = users[str(ctx.author.id)]['balance']
+
+        if bet is None:
+            embed = discord.Embed(title=f"You are missing a required argument!", color=0xfff)
+            embed.add_field(name="``Example: ?bet 3``", value="Please enter an amount you want to bet.", inline = False)
+            await ctx.send(embed=embed, delete_after=5)
+            return
+
+        if bet == "all":
+            bet = balance
+        else:
+            bet = int(bet)
+
+        # user does not have enough money
+        if balance < bet: 
+            embed = discord.Embed(title=f"You cannot afford this bet!", color=0xfff)
+            embed.add_field(name="``Example: ?bet 3``", value="Please lower the amount you want to bet to afford this option.", inline = False)
+            await ctx.send(embed=embed, delete_after=5)
+            return
+        
+        # amount is not positive
+        if bet <= 0:
+            embed = discord.Embed(title=f"This is an invalid amount!", color=0xfff)
+            embed.add_field(name="``Example: ?bet 3``", value="Please higher the amount you want to bet to execute this option.", inline = False)
+            await ctx.send(embed=embed, delete_after=5)
+            return
+
+        slots = []
+        for i in range(3):
+            slots.append(random.choice(['Apple', 'Cherry', 'Banana']))
+        
+        # Jackpot
+        if slots[0] is slots[1] and slots[1] is slots[2]:
+            embed = discord.Embed(title=f":money_with_wings: {ctx.author.name}'s slot machine prize (¥{bet})", color=0xfff)
+            embed.add_field(name=f"``Jackpot``", value=f"¥{bet * 5} Yen has been added to your account!", inline = False)
+            await ctx.send(embed=embed)
+
+        # Won
+        elif slots[0] is slots[1] or slots[0] is slots[2] or slots[0] is slots[2]:
+            embed = discord.Embed(title=f":money_with_wings: {ctx.author.name}'s slot machine prize (¥{bet})", color=0xfff)
+            embed.add_field(name=f"``Won``", value=f"¥{bet * 2} Yen has been added to your account!", inline = False)
+            await ctx.send(embed=embed)
+
+        # Lost
+        else:
+            embed = discord.Embed(title=f":money_with_wings: {ctx.author.name}'s slot machine prize (¥{bet})", color=0xfff)
+            embed.add_field(name=f"``Lost``", value=f"You've lost the gamble", inline = False)
+            await ctx.send(embed=embed)
+
+    @gamble.error
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            secs = int(error.retry_after)
+            msg = f'**Cooldown**, please try again in {secs} seconds'
+            await ctx.send(msg, delete_after=5)
 
 def setup(bot):
     bot.add_cog(eco(bot))
