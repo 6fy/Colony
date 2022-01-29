@@ -76,7 +76,7 @@ class Data:
         return amt
     
     # < ----------------------------------------
-    #         User updating
+    #         User level updating
     # ---------------------------------------- > 
 
     async def add_user_level(self, id, user, level = 0):
@@ -113,10 +113,16 @@ class Data:
         return ranks
 
     # < ----------------------------------------
-    #         Setting guild ranks
+    #         Creates guild object
     # ---------------------------------------- >
 
     async def open_guild(self, id):
+        """``Creates a guild object, returns True if created and False if it already exists``
+
+        ``Input``: int
+        ``Output example``: True
+        ``Usage example``: await self.open_guild(id)
+        """
         ranks = await self.get_ranks()
 
         if str(id) in ranks:
@@ -134,6 +140,12 @@ class Data:
     # ---------------------------------------- >
 
     async def add_guild_rank(self, rank, role_id, id):
+        """``Adds an object which includes a role id and the rank``
+
+        ``Input``: int, int, int
+        ``Output example``: "There is already a role applied to this rank!"
+        ``Usage example``: error = await data.add_guild_rank(rank, role.id, ctx.guild.id)
+        """
         await self.open_guild(id)
         ranks = await self.get_ranks()
 
@@ -150,8 +162,14 @@ class Data:
     #         Rank updating
     # ---------------------------------------- > 
 
-    async def update_user_rank(self, member, id = int):
-        await self.open_guild( id)
+    async def get_user_rank(self, member, id = int):
+        """``Gets the role id of the users current rank``
+
+        ``Input``: discord user, int
+        ``Output example``: 138193190
+        ``Usage example``: role_id = await data.get_user_rank(ctx.author, ctx.guild.id)
+        """
+        await self.open_guild(id)
 
         user = await self.get_user_data(member, id)
         level = user["level"]
@@ -168,6 +186,12 @@ class Data:
     # ---------------------------------------- > 
 
     async def remove_guild_rank(self, level, id):
+        """``Deletes a rank object then returns False if deleted and an error message if rank object was not found``
+
+        ``Input``: int, int
+        ``Output example``: 200
+        ``Usage example``: await data.remove_guild_rank(level, ctx.guild.id)
+        """
         await self.open_guild(id)
 
         ranks = await self.get_ranks()

@@ -1,8 +1,11 @@
 import discord
 from discord.ext import commands
-from assets.imports.level import Data
 
-data = Data()
+try:
+    from assets.imports.level import Data
+    data = Data()
+except ModuleNotFoundError:
+    print('ModuleNotFoundError: Did you run main.py?')
 
 class xp(commands.Cog):
     def __init__(self, bot):

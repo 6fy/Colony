@@ -1,13 +1,22 @@
 import discord
 import random
+import asyncio
 
 from discord.ext import commands
 
-from assets.imports.economy import Balance
-bal = Balance()
+try:
+    from assets.imports.economy import Balance
+    bal = Balance()
 
-from assets.imports.convert import Converter
-convert = Converter()
+    from assets.imports.convert import Converter
+    convert = Converter()
+
+    from assets.imports.questions import Questions
+    q = Questions()
+    questions = q.questions
+
+except ModuleNotFoundError:
+    print('ModuleNotFoundError: Did you run main.py?')
 
 class eco(commands.Cog):
     def __init__(self, bot):
@@ -59,19 +68,12 @@ class eco(commands.Cog):
         embed.add_field(name="``Work report:``", value=job, inline = False)
         await ctx.send(embed=embed)
 
-    @daily.error
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            secs = int(error.retry_after)
-            msg = f'**Cooldown**, please try again in {secs} seconds'
-            await ctx.send(msg, delete_after=5)
-
     # ============()============
     #    Leaderboards 
     # ============()============
 
     @commands.command(brief="Find out who the riches person is", aliases = ["lb", "lbs"])
-    async def leaderboard(self, ctx, x = 11):
+    async def leaderboard(self, ctx, total: int = None):
         users = await bal.get_guild_users(ctx.guild.id)
 
         total = [] # Total amount to sort it
@@ -87,6 +89,9 @@ class eco(commands.Cog):
 
         # Get 5 highest values
         max = 5
+        if total is not None:
+            max = int(total)
+
         for v in range(len(sort)):
             # If the value is lower than the 5th place remove them
             if v > max:
@@ -105,7 +110,7 @@ class eco(commands.Cog):
     #    Gamble your money 
     # ============()============
 
-    @commands.command(brief="Gamble your money")
+    @commands.command(brief="Gamble your money", aliases = ["bet"])
     async def gamble(self, ctx, bet: str = None):
         await ctx.message.delete()
 
@@ -166,12 +171,73 @@ class eco(commands.Cog):
 
         await bal.update_balance(ctx.author, prize, ctx.guild.id)
 
-    @gamble.error
-    async def on_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            secs = int(error.retry_after)
-            msg = f'**Cooldown**, please try again in {secs} seconds'
-            await ctx.send(msg, delete_after=5)
+    # ============()============
+    #    Answer a question for money
+    # ============()============
+
+    @commands.command(brief="Answer a question for money")
+    async def quiz(self, ctx, bet: int = None):
+        await ctx.message.delete()
+
+        users = await bal.get_guild_users(ctx.guild.id)
+        balance = users[str(ctx.author.id)]['balance']
+
+        if bet is None:
+            bet = 50
+        
+        if bet <= 0:
+            bet = 50
+
+        if bet == "all":
+            bet = balance
+        else:
+            bet = int(bet)
+
+        if balance < bet:
+            embed = discord.Embed(title="Not enough money!", color=0xfff)
+            embed.add_field(name=f"You need at least ¥50 Yen to play this, or define a bet", value=f"Example: ?quiz 5", inline = False)
+            await ctx.send(embed=embed)
+            return
+
+        correct = '✅'
+        false = '❌'
+
+        chosen_question = random.randint(0, len(questions) - 1)
+        question = questions[chosen_question]
+
+        msg = await ctx.send(question["text"], delete_after=30)
+        await msg.add_reaction(correct)
+        await msg.add_reaction(false)
+
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', check=lambda reaction, user: user == ctx.author and reaction.emoji in [correct, false], timeout=30.0)
+
+        except asyncio.TimeoutError:
+            await ctx.send('Question time expired', delete_after=5)
+            return
+        
+        answered = True if question["answer"] == True else False
+
+        if reaction.emoji == correct:
+            await send_message(ctx, answered, question["explaination"], bet)
+        
+        elif reaction.emoji == false:
+            await send_message(ctx, not answered, question["explaination"], bet)
 
 def setup(bot):
     bot.add_cog(eco(bot))
+
+async def send_message(ctx, correct: bool, explaination: str, bet: int):
+    if correct:
+        title = f'Wow you\'re smart. Your reward is ¥{bet} Yen!'
+        color = 0x0af531
+        await bal.update_balance(ctx.author, bet, ctx.guild.id)
+
+    else:
+        title = f'You\'re talented in the head if you think you\'re correct. You lost ¥{bet} Yen!'
+        color = 0xf50f26
+        await bal.update_balance(ctx.author, -bet, ctx.guild.id)
+
+    embed = discord.Embed(title=title, color=color)
+    embed.add_field(name=f"Correctly answered: {correct}", value=f"Explaination: {explaination}", inline = False)
+    await ctx.send(embed=embed)

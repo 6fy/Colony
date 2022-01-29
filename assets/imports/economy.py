@@ -9,6 +9,12 @@ class Balance():
     # ============()============
     
     async def get_all_users(self):
+        """``Returns an object with all the users``
+
+        ``Input``: Nothing
+        ``Output example``: { "9147112941": {"1234554321": {"balance": 200}, "5432112345": {"balance": 200} }, "9147112941": {"1234554321": {"balance": 200} }
+        ``Usage example``: await self.get_guild_users()
+        """
         with open(self.file, 'r', encoding="utf8") as f:
             users = json.load(f)
         
@@ -19,6 +25,12 @@ class Balance():
     # ============()============
 
     async def get_guild_users(self,id):
+        """``Returns an object with all the users in that particular guild``
+
+        ``Input``: int
+        ``Output example``: {"1234554321": {"balance": 200}, "5432112345": {"balance": 200}
+        ``Usage example``: await self.get_guild_users(ctx.guild.id)
+        """
         await self.create_guild(id)
         with open(self.file, 'r', encoding="utf8") as f:
             content = json.load(f)
@@ -31,6 +43,12 @@ class Balance():
     # ============()============
 
     async def create_guild(self, id):
+        """``Creates a guild object, returns True if object is created and False if object already exists``
+
+        ``Input``: int
+        ``Output example``: True
+        ``Usage example``: await self.create_account(ctx.guild.id)
+        """
         users = await self.get_all_users()
 
         if str(id) in users:
@@ -48,6 +66,12 @@ class Balance():
     # ============()============
     
     async def create_account(self, user, id):
+        """``Creates a JSON object, returns True if object is created and False if object already exists``
+
+        ``Input``: discord user, int
+        ``Output example``: True
+        ``Usage example``: await self.create_account(ctx.author, ctx.guild.id)
+        """
         await self.create_guild(id)
         users = await self.get_all_users()
 
@@ -67,6 +91,12 @@ class Balance():
     # ============()============
 
     async def update_balance(self, user, balance, id):
+        """``Updates the balance of a user then returns the balance after updating``
+
+        ``Input``: discord user, int, int
+        ``Output example``: 200
+        ``Usage example``: await bal.update_balance(ctx.author, bet, ctx.guild.id)
+        """
         await self.create_account(user, id)
 
         users = await self.get_all_users()

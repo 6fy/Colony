@@ -7,6 +7,9 @@ from discord.ext.commands import CommandNotFound
 from assets.imports.level import Data
 data = Data()
 
+from assets.imports.convert import Converter
+convert = Converter()
+
 # < ----------------------------------------
 #         Bot variables
 # ---------------------------------------- >
@@ -34,6 +37,26 @@ async def on_command_error(ctx, error):
         embed.add_field(name="``CommandNotFound``", value=f'There is no command found called **{ctx.message.content}**')
         await ctx.channel.send(embed=embed, delete_after=10)
         return
+    
+    if isinstance(error, commands.CommandOnCooldown):
+        secs = await convert.secondsToTimeText(int(error.retry_after))
+
+        embed = discord.Embed(title=f"You are currently on a cooldown!", color=0xfff)
+        embed.add_field(name="**Cooldown**", value=f'You can execute this command again in {secs}')
+        await ctx.channel.send(embed=embed, delete_after=10)
+        return
+
+    if isinstance(error, ValueError):
+        embed = discord.Embed(title=f"An error occurred!", color=0xfff)
+        embed.add_field(name="``ValueError``", value=f'Please make sure your argument is a number')
+        await ctx.channel.send(embed=embed, delete_after=10)
+        return
+    
+    if isinstance(error, commands.BadArgument):
+        embed = discord.Embed(title=f"An error occurred!", color=0xfff)
+        embed.add_field(name="``BadArgument``", value=f'Please make sure your argument is a number')
+        await ctx.channel.send(embed=embed, delete_after=10)
+        return
 
     raise error
 
@@ -43,7 +66,7 @@ async def on_message(ctx):
     await data.open_account(ctx.author, ctx.guild.id)
     await data.update_user(ctx.guild.id, ctx.author, xp)
 
-    role_id = await data.update_user_rank(ctx.author, ctx.guild.id)
+    role_id = await data.get_user_rank(ctx.author, ctx.guild.id)
     if role_id:
         try:
             r = discord.utils.get(ctx.guild.roles, id=int(role_id))
