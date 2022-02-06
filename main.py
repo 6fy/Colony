@@ -95,6 +95,7 @@ cogs = {
     'cogs.eco',
     'cogs.dev',
     'cogs.xp',
+    'cogs.pet',
 }
 
 if __name__ == "__main__":

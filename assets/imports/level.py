@@ -1,13 +1,9 @@
-from asyncio.windows_events import NULL
 import json
-import discord
-
-file = "assets/userdata/levels/" + "data.json"
-guild_file = "assets/userdata/levels/" + "ranks.json"
 
 class Data:
     def __init__(self):
-        self.file = file
+        self.file = "assets/userdata/levels/" + "data.json"
+        self.guild_file = "assets/userdata/levels/" + "ranks.json"
 
     # < ----------------------------------------
     #         Opening a user's account
@@ -19,7 +15,7 @@ class Data:
         if str(id) not in users:
             users[str(id)] = {}
         
-        with open(file, "w") as f:
+        with open(self.file, "w") as f:
             json.dump(users, f)
 
         if str(user.id) in users[str(id)]:
@@ -29,7 +25,7 @@ class Data:
             users[str(id)][str(user.id)]["level"] = 1
             users[str(id)][str(user.id)]["xp"] = 0
 
-        with open(file, "w") as f:
+        with open(self.file, "w") as f:
             json.dump(users, f)
 
         return True
@@ -39,7 +35,7 @@ class Data:
     # ---------------------------------------- > 
 
     async def get_user_data(self, user, id):
-        with open(file, "r") as f:
+        with open(self.file, "r") as f:
             content = json.load(f)
             user = content[str(id)][str(user.id)]
 
@@ -50,7 +46,7 @@ class Data:
     # ---------------------------------------- > 
 
     async def get_users(self, id):
-        with open(file, "r") as f:
+        with open(self.file, "r") as f:
             content = json.load(f)
 
         return content
@@ -65,7 +61,7 @@ class Data:
 
         users[str(id)][str(user.id)]["xp"] += xp
 
-        with open(file, "w") as f:
+        with open(self.file, "w") as f:
             json.dump(users, f)
 
         amt = users[str(id)][str(user.id)]["xp"]
@@ -85,7 +81,7 @@ class Data:
         users[str(id)][str(user.id)]["xp"] = 0
         users[str(id)][str(user.id)]["level"] = level
 
-        with open(file, "w") as f:
+        with open(self.file, "w") as f:
             json.dump(users, f)
 
         lvl = users[str(id)][str(user.id)]["level"]
@@ -96,7 +92,7 @@ class Data:
     # ---------------------------------------- > 
 
     async def get_ranks(self):
-        with open(guild_file, "r") as f:
+        with open(self.guild_file, "r") as f:
             ranks = json.load(f)
 
         return ranks
@@ -106,7 +102,7 @@ class Data:
     # ---------------------------------------- > 
 
     async def get_guild_ranks(self, id):
-        with open(guild_file, "r") as f:
+        with open(self.guild_file, "r") as f:
             content = json.load(f)
             ranks = content[str(id)]
 
@@ -130,7 +126,7 @@ class Data:
         else:
             ranks[str(id)] = {}
 
-        with open(guild_file, "w") as f:
+        with open(self.guild_file, "w") as f:
             json.dump(ranks, f)
 
         return True
@@ -153,7 +149,7 @@ class Data:
             return "There is already a role applied to this rank!"
 
         ranks[str(id)][str(rank)] = str(role_id)
-        with open(guild_file, "w") as f:
+        with open(self.guild_file, "w") as f:
             json.dump(ranks, f)
 
         return False
@@ -198,7 +194,7 @@ class Data:
 
         if str(level) in ranks[str(id)]:
             del ranks[str(id)][str(level)]
-            with open(guild_file, "w") as f:
+            with open(self.guild_file, "w") as f:
                 json.dump(ranks, f)
 
             return False
